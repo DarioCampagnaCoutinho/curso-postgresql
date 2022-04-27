@@ -1,0 +1,146 @@
+CREATE TABLE Fabricante(
+  codigo INT NOT NULL PRIMARY KEY,
+  nome VARCHAR(45) NOT NULL,
+  cnpj VARCHAR(20) NOT NULL UNIQUE
+);
+
+CREATE TABLE Estado(
+  sigla VARCHAR(2) NOT NULL PRIMARY KEY,
+  nome VARCHAR(45) NOT NULL
+);
+
+CREATE TABLE Cidade(
+  codigo INT NOT NULL PRIMARY KEY,
+  nome VARCHAR(45) NOT NULL,
+  estado_sigla VARCHAR(2) NOT NULL,
+  FOREIGN KEY (estado_sigla) REFERENCES Estado
+);
+
+CREATE TABLE Bairro(
+  codigo INT NOT NULL PRIMARY KEY,
+  nome VARCHAR(45) NOT NULL,
+  cidade_codigo INT NOT NULL,
+  FOREIGN KEY (cidade_codigo) REFERENCES Cidade
+);
+
+CREATE TABLE Endereco (
+  codigo INT NOT NULL PRIMARY KEY,
+  rua VARCHAR(100) NOT NULL,
+  numero INT NOT NULL,
+  bairro_codigo INT NOT NULL,
+  FOREIGN KEY (bairro_codigo) REFERENCES Bairro
+);
+
+CREATE TABLE Contato (
+  codigo INT NOT NULL PRIMARY KEY,
+  telefone VARCHAR(20) NOT NULL,
+  celular VARCHAR(20) NOT NULL,
+  email VARCHAR(100) NOT NULL
+);
+
+CREATE TABLE Categoria (
+  codigo INT NOT NULL PRIMARY KEY,
+  nome VARCHAR(45) NOT NULL
+);
+
+CREATE TABLE Produto(
+  codigo INT NOT NULL PRIMARY KEY,
+  nome VARCHAR(45) NOT NULL,
+  tipo VARCHAR(100) NOT NULL,
+  dataValidade DATE NOT NULL,
+  quantidade INT NOT NULL,
+  preco DECIMAL NOT NULL,
+  fabricante_codigo INT NOT NULL,
+  categoria_codigo INT NOT NULL,
+  FOREIGN KEY (fabricante_codigo) REFERENCES Fabricante,
+  FOREIGN KEY (categoria_codigo) REFERENCES Categoria
+);
+
+CREATE TABLE Cliente(
+  codigo INT NOT NULL PRIMARY KEY,
+  nome VARCHAR(45) NOT NULL
+);
+
+CREATE TABLE Filial (
+  codigo INT NOT NULL PRIMARY KEY,
+  nome VARCHAR(45) NOT NULL
+);
+
+CREATE TABLE Funcionario(
+  codigo INT NOT NULL PRIMARY KEY,
+  nome VARCHAR(45) NOT NULL,
+  cpf VARCHAR(20) NOT NULL UNIQUE,
+  cargo VARCHAR(45) NOT NULL,
+  filial_codigo INT NOT NULL,
+  FOREIGN KEY (filial_codigo) REFERENCES Filial
+);
+
+CREATE TABLE Venda (
+  codigo INT NOT NULL PRIMARY KEY,
+  dataDaVenda DATE NOT NULL,
+  numeroPedido INT NOT NULL,
+  cliente_codigo INT NOT NULL,
+  funcionario_codigo INT NOT NULL,
+  filial_codigo INT NOT NULL,
+  FOREIGN KEY (cliente_codigo) REFERENCES Cliente,
+  FOREIGN KEY (funcionario_codigo) REFERENCES Funcionario,
+  FOREIGN KEY (filial_codigo) REFERENCES Filial
+); 
+
+CREATE TABLE ItensDaVenda(
+  codigo INT NOT NULL PRIMARY KEY,
+  quantidadeItens INT NOT NULL,
+  totalVenda DECIMAL NOT NULL,
+  produto_codigo INT NOT NULL,
+  venda_codigo INT NOT NULL,
+  FOREIGN KEY (produto_codigo) REFERENCES Produto,
+  FOREIGN KEY (venda_codigo) REFERENCES Venda
+); 
+
+CREATE TABLE Endereco_Fabricante(
+  idEndereco_Fabricante INT NOT NULL PRIMARY KEY,
+  fabricante_id INT NOT NULL,
+  endereco_id INT NOT NULL,
+  FOREIGN KEY (fabricante_id) REFERENCES Fabricante,
+  FOREIGN KEY (endereco_id) REFERENCES Endereco
+);
+    
+CREATE TABLE Endereco_Filial(
+  idEndereco_Filial INT NOT NULL PRIMARY KEY,
+  filial_id INT NOT NULL,
+  endereco_id INT NOT NULL,
+  FOREIGN KEY (filial_id) REFERENCES Filial,
+  FOREIGN KEY (endereco_id) REFERENCES Endereco
+);
+
+CREATE TABLE Endereco_Cliente(
+  idEndreco_Cliente INT NOT NULL PRIMARY KEY,
+  cliente_id INT NOT NULL,
+  endereco_id INT NOT NULL,
+  FOREIGN KEY (cliente_id) REFERENCES Cliente,
+  FOREIGN KEY (endereco_id) REFERENCES Endereco
+);
+
+CREATE TABLE Contato_Fabricante(
+  idContato_Fabricante INT NOT NULL PRIMARY KEY,
+  fabricante_id INT NOT NULL,
+  contato_id INT NOT NULL,
+  FOREIGN KEY (fabricante_id) REFERENCES Fabricante,
+  FOREIGN KEY (contato_id) REFERENCES Contato
+);
+    
+CREATE TABLE Contato_Filial(
+  idContato_Filial INT NOT NULL PRIMARY KEY,
+  filial_id INT NOT NULL,
+  contato_id INT NOT NULL,
+  FOREIGN KEY (filial_id) REFERENCES Filial,
+  FOREIGN KEY (contato_id) REFERENCES Contato
+);
+
+CREATE TABLE Contato_Cliente(
+  idContato_Cliente INT NOT NULL PRIMARY KEY,
+  cliente_id INT NOT NULL,
+  contato_id INT NOT NULL,
+  FOREIGN KEY (cliente_id) REFERENCES Cliente,
+  FOREIGN KEY (contato_id) REFERENCES Contato
+);

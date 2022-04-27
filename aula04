@@ -1,0 +1,11 @@
+--1
+select * from Endereco_Cliente;
+
+--2
+delete from Endereco_Cliente
+where idEndreco_Cliente = 1
+
+--3
+update Endereco_Cliente
+set endereco_id = 5
+where idEndreco_Cliente = 1

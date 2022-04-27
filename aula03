@@ -1,0 +1,126 @@
+--1
+select * from Fabricante;
+
+select * from Estado;
+
+--2
+select sum(quantidade) as "Estoque"
+from Produto;
+
+select tipo as "Tipo", sum(quantidade) as "Estoque"
+from Produto
+group by tipo;
+
+--3
+select Cliente.nome, Endereco.rua, Endereco.numero, Bairro.nome, Cidade.nome, Estado.nome
+from Cliente
+inner join Endereco_Cliente on Cliente.codigo = Endereco_cliente.cliente_id
+inner join Endereco on Endereco_Cliente.endereco_id = Endereco.codigo
+inner join Bairro on Endereco.bairro_codigo = Bairro.codigo
+inner join Cidade on Bairro.cidade_codigo = Cidade.codigo
+inner join Estado on Cidade.estado_sigla = Estado.sigla
+order by Cliente.nome;
+
+--4
+	 
+select Filial.nome as Filial, Endereco.rua as Rua, Endereco.numero as Numero, Bairro.nome as Bairro, Cidade.nome as Cidade, Estado.nome as Estado
+from Filial
+inner join Endereco_Filial on Filial.codigo = Endereco_Filial.filial_id
+inner join Endereco on Endereco_Filial.endereco_id = Endereco.codigo
+inner join Bairro on Endereco.bairro_codigo = Bairro.codigo
+inner join Cidade on Bairro.cidade_codigo = Cidade.codigo
+inner join Estado on Cidade.estado_sigla = Estado.sigla;
+
+--5
+
+select Produto.nome, sum(Produto.quantidade) as "Estoque", ItensDaVenda.quantidadeItens, ItensDaVenda.totalVenda
+from Produto
+inner join ItensDaVenda on Produto.codigo = ItensDaVenda.produto_codigo
+group by Produto.quantidade, ItensDaVenda.quantidadeItens,ItensDaVenda.totalVenda, Produto.nome;
+
+select Venda.dataDaVenda, sum(ItensDaVenda.quantidadeItens), Filial.nome
+from Venda
+inner join ItensDaVenda on Venda.codigo = ItensDaVenda.venda_codigo
+inner join Filial on Filial.codigo = Venda.filial_codigo
+group by Venda.dataDaVenda, ItensDaVenda.quantidadeItens,Filial.nome;
+
+select Produto.nome, sum(ItensDaVenda.quantidadeItens), Filial.nome
+from Venda
+inner join ItensDaVenda on Venda.codigo = ItensDaVenda.venda_codigo
+inner join Filial on Filial.codigo = Venda.filial_codigo
+inner join Produto on ItensDaVenda.produto_codigo = Produto.codigo
+group by ItensDaVenda.quantidadeItens,Filial.nome, Produto.nome;
+
+--6
+
+select Cliente.nome, Endereco.rua, Endereco.numero, Bairro.nome, Cidade.nome, Estado.nome
+from Cliente
+inner join Endereco_Cliente on Cliente.codigo = Endereco_cliente.cliente_id
+inner join Endereco on Endereco_Cliente.endereco_id = Endereco.codigo
+inner join Bairro on Endereco.bairro_codigo = Bairro.codigo
+inner join Cidade on Bairro.cidade_codigo = Cidade.codigo
+inner join Estado on Cidade.estado_sigla = Estado.sigla
+order by Cliente.nome;
+
+--7
+
+select Produto.nome, sum(ItensDaVenda.quantidadeItens), Filial.nome
+from Venda
+inner join ItensDaVenda on Venda.codigo = ItensDaVenda.venda_codigo
+inner join Filial on Filial.codigo = Venda.filial_codigo
+inner join Produto on ItensDaVenda.produto_codigo = Produto.codigo
+group by ItensDaVenda.quantidadeItens,Filial.nome, Produto.nome;
+
+--8
+
+--Por itens, Trazendo os valores
+select Cliente.nome, sum(ItensDaVenda.quantidadeItens), ItensDaVenda.totalVenda
+from Venda
+inner join Cliente on Venda.cliente_codigo = Cliente.codigo
+inner join ItensDaVenda on Venda.codigo = ItensDaVenda.venda_codigo
+group by Cliente.nome,ItensDaVenda.quantidadeItens, ItensDaVenda.totalVenda 
+order by ItensDaVenda.quantidadeItens desc;
+--Por Total Vendido
+select Cliente.nome, sum(ItensDaVenda.quantidadeItens), ItensDaVenda.totalVenda
+from Venda
+inner join Cliente on Venda.cliente_codigo = Cliente.codigo
+inner join ItensDaVenda on Venda.codigo = ItensDaVenda.venda_codigo
+group by Cliente.nome,ItensDaVenda.quantidadeItens, ItensDaVenda.totalVenda 
+order by ItensDaVenda.totalVenda desc limit 5;
+
+--9
+
+CREATE OR REPLACE FUNCTION atualiza()
+RETURNS TRIGGER AS $$
+BEGIN
+IF(NOT EXISTS (SELECT * FROM Produto
+WHERE codigo = NEW.codigo AND
+quantidade >= NEW.QUANTIDADE)) THEN
+RAISE EXCEPTION 'QUANTIDADE INSUFICIENTE EM ESTOQUE';
+END IF;
+UPDATE Produto SET quantidade = quantidade - NEW.QUANTIDADE WHERE codigo = NEW.codigo;
+RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+CREATE TRIGGER ATUALIZA
+AFTER INSERT OR UPDATE ON ITENSDAVENDA
+FOR EACH ROW
+EXECUTE PROCEDURE atualiza();
+
+--10
+
+select Produto.nome as "Produto",Produto.tipo as "Tipo",Filial.nome as "Filial",Categoria.nome as "Categoria",ItensDaVenda.quantidadeItens as "Itens",ItensDaVenda.totalVenda as "Total"
+from Venda
+inner join ItensDaVenda on Venda.codigo = ItensDaVenda.venda_codigo
+inner join Produto on Produto.codigo = ItensDaVenda.venda_codigo
+inner join Categoria on Categoria.codigo = Produto.categoria_codigo
+inner join Filial on Filial.codigo = Venda.filial_codigo;
+
+--11
+
+select Produto.nome as "Produto",Produto.dataValidade as "Validade",Produto.quantidade as "Estoque",Fabricante.nome as "Fabricante",Filial.nome as "Filial"
+from Venda
+inner join ItensDaVenda on Venda.codigo = ItensDaVenda.venda_codigo
+inner join Produto on Produto.codigo = ItensDaVenda.venda_codigo
+inner join Filial on Filial.codigo = Venda.filial_codigo
+inner join Fabricante on Fabricante.codigo = Produto.fabricante_codigo
